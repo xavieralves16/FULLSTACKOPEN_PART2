@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import Filter from './components/Filter'
+import PersonForm from './components/PersonForm'
+import Persons from './components/Persons'
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -15,10 +18,7 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault()
 
-    const nameExists = persons.some(
-      person => person.name === newName
-    )
-
+    const nameExists = persons.some(p => p.name === newName)
     if (nameExists) {
       alert(`${newName} is already added to phonebook`)
       return
@@ -35,18 +35,6 @@ const App = () => {
     setNewNumber('')
   }
 
-  const handleNameChange = (event) => {
-    setNewName(event.target.value)
-  }
-
-  const handleNumberChange = (event) => {
-    setNewNumber(event.target.value)
-  }
-
-  const handleSearchChange = (event) => {
-    setSearch(event.target.value)
-  }
-
   const personsToShow = persons.filter(person =>
     person.name.toLowerCase().includes(search.toLowerCase())
   )
@@ -55,35 +43,27 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
 
-      <div>
-        filter shown with <input value={search} onChange={handleSearchChange} />
-      </div>
+      <Filter search={search} setSearch={setSearch} />
 
-      <form onSubmit={addPerson}>
-        <div>
-          name: <input value={newName} onChange={handleNameChange} />
-        </div>
-        <div>
-          number: <input value={newNumber} onChange={handleNumberChange} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+      <h3>Add a new</h3>
 
-      <h2>Numbers</h2>
-      <ul>
-        {personsToShow.map(person =>
-          <li key={person.id}>
-            {person.name} {person.number}
-          </li>
-        )}
-      </ul>
+      <PersonForm
+        addPerson={addPerson}
+        newName={newName}
+        newNumber={newNumber}
+        setNewName={setNewName}
+        setNewNumber={setNewNumber}
+      />
+
+      <h3>Numbers</h3>
+
+      <Persons persons={personsToShow} />
     </div>
   )
 }
 
 export default App
+
 
 
 
