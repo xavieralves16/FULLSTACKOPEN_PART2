@@ -3,14 +3,18 @@ import personService from './services/persons'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notification from './components/Notification'
+
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [search, setSearch] = useState('')
+  const [notification, setNotification] = useState(null)
 
-  // 🔹 FETCH inicial
+
+  
   useEffect(() => {
     personService
       .getAll()
@@ -19,7 +23,7 @@ const App = () => {
       })
   }, [])
 
-  // 🔹 ADD ou UPDATE
+ 
   const addPerson = (event) => {
     event.preventDefault()
 
@@ -27,7 +31,7 @@ const App = () => {
       person => person.name === newName
     )
 
-    // 👉 Caso o nome já exista → UPDATE
+
     if (existingPerson) {
       const ok = window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`
@@ -43,20 +47,23 @@ const App = () => {
         .update(existingPerson.id, updatedPerson)
         .then(response => {
           setPersons(
-            persons.map(person =>
-              person.id !== existingPerson.id
-                ? person
-                : response.data
+            persons.map(p =>
+              p.id !== existingPerson.id ? p : response.data
             )
           )
+          setNotification(`Updated ${response.data.name}`)
+          setTimeout(() => {
+            setNotification(null)
+          }, 5000)
           setNewName('')
           setNewNumber('')
         })
 
+
       return
     }
 
-    // 👉 Caso novo contacto → CREATE
+
     const personObject = {
       name: newName,
       number: newNumber
@@ -66,12 +73,16 @@ const App = () => {
       .create(personObject)
       .then(response => {
         setPersons(persons.concat(response.data))
+        setNotification(`Added ${response.data.name}`)
+        setTimeout(() => {
+          setNotification(null)
+        }, 5000)
         setNewName('')
         setNewNumber('')
       })
   }
 
-  // 🔹 DELETE
+
   const deletePerson = (id, name) => {
     const ok = window.confirm(`Delete ${name}?`)
     if (!ok) return
@@ -83,7 +94,7 @@ const App = () => {
       })
   }
 
-  // 🔹 FILTRO
+
   const personsToShow = persons.filter(person =>
     person.name.toLowerCase().includes(search.toLowerCase())
   )
@@ -91,6 +102,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Notification message={notification} />
 
       <Filter search={search} setSearch={setSearch} />
 
