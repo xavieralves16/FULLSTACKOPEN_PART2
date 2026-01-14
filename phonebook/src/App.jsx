@@ -12,6 +12,8 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [search, setSearch] = useState('')
   const [notification, setNotification] = useState(null)
+  const [notificationType, setNotificationType] = useState('success')
+
 
 
   
@@ -51,13 +53,24 @@ const App = () => {
               p.id !== existingPerson.id ? p : response.data
             )
           )
+
+          setNotificationType('success')
           setNotification(`Updated ${response.data.name}`)
-          setTimeout(() => {
-            setNotification(null)
-          }, 5000)
+          setTimeout(() => setNotification(null), 5000)
+
           setNewName('')
           setNewNumber('')
         })
+        .catch(error => {
+          setNotificationType('error')
+          setNotification(
+            `Information of ${existingPerson.name} has already been removed from server`
+          )
+          setTimeout(() => setNotification(null), 5000)
+
+          setPersons(persons.filter(p => p.id !== existingPerson.id))
+        })
+
 
 
       return
@@ -103,7 +116,11 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
 
-      <Notification message={notification} />
+      <Notification
+        message={notification}
+        type={notificationType}
+      />
+
 
       <Filter search={search} setSearch={setSearch} />
 
