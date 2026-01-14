@@ -10,6 +10,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [search, setSearch] = useState('')
 
+  // 🔹 FETCH inicial
   useEffect(() => {
     personService
       .getAll()
@@ -18,15 +19,44 @@ const App = () => {
       })
   }, [])
 
+  // 🔹 ADD ou UPDATE
   const addPerson = (event) => {
     event.preventDefault()
 
-    const nameExists = persons.some(p => p.name === newName)
-    if (nameExists) {
-      alert(`${newName} is already added to phonebook`)
+    const existingPerson = persons.find(
+      person => person.name === newName
+    )
+
+    // 👉 Caso o nome já exista → UPDATE
+    if (existingPerson) {
+      const ok = window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      )
+      if (!ok) return
+
+      const updatedPerson = {
+        ...existingPerson,
+        number: newNumber
+      }
+
+      personService
+        .update(existingPerson.id, updatedPerson)
+        .then(response => {
+          setPersons(
+            persons.map(person =>
+              person.id !== existingPerson.id
+                ? person
+                : response.data
+            )
+          )
+          setNewName('')
+          setNewNumber('')
+        })
+
       return
     }
 
+    // 👉 Caso novo contacto → CREATE
     const personObject = {
       name: newName,
       number: newNumber
@@ -41,6 +71,7 @@ const App = () => {
       })
   }
 
+  // 🔹 DELETE
   const deletePerson = (id, name) => {
     const ok = window.confirm(`Delete ${name}?`)
     if (!ok) return
@@ -48,11 +79,11 @@ const App = () => {
     personService
       .remove(id)
       .then(() => {
-        setPersons(persons.filter(p => p.id !== id))
+        setPersons(persons.filter(person => person.id !== id))
       })
   }
 
-
+  // 🔹 FILTRO
   const personsToShow = persons.filter(person =>
     person.name.toLowerCase().includes(search.toLowerCase())
   )
