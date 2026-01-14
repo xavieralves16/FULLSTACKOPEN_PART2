@@ -35,22 +35,33 @@ const CountryDetails = ({ country }) => (
 )
 
 // Componente para mostrar lista de países
-const CountryList = ({ countries }) => (
+const CountryList = ({ countries, onShow }) => (
   <ul>
     {countries.map((c) => (
-      <li key={c.name.common}>{c.name.common}</li>
+      <li key={c.name.common}>
+        {c.name.common}{' '}
+        <button onClick={() => onShow(c)}>show</button>
+      </li>
     ))}
   </ul>
 )
 
+
 const App = () => {
   const [countries, setCountries] = useState([])
   const [search, setSearch] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState(null)
+
 
   // 🔹 Fetch inicial da API
   useEffect(() => {
     countriesService.getAll().then((response) => setCountries(response.data))
   }, [])
+
+  // 🔹 Resetar seleção quando o input muda
+  useEffect(() => {
+    setSelectedCountry(null)
+  }, [search])
 
   // 🔹 Filtrar países de acordo com o input
   const filteredCountries = countries.filter((country) =>
@@ -59,12 +70,21 @@ const App = () => {
 
   // 🔹 Lógica de exibição de resultados
   const renderCountries = () => {
+    if (selectedCountry) {
+      return <CountryDetails country={selectedCountry} />
+    }
+
     if (filteredCountries.length > 10) {
       return <p>Too many matches, specify another filter</p>
     }
 
     if (filteredCountries.length > 1) {
-      return <CountryList countries={filteredCountries} />
+      return (
+        <CountryList 
+          countries={filteredCountries} 
+          onShow={setSelectedCountry} 
+        />
+      )
     }
 
     if (filteredCountries.length === 1) {
@@ -73,6 +93,7 @@ const App = () => {
 
     return <p>No matches</p>
   }
+
 
   return (
     <div>
